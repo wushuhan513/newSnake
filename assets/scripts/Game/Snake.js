@@ -136,7 +136,8 @@ cc.Class({
     },
 
     //死亡生成食物
-    deadFood(parentNode) {
+    deadFood(Game) {
+        let parentNode = Game.FoodBaseNode;
         var len = this._HeadBodyList.length;
         for (var i = 0; i < len; ++i) {
             //if(i % 2 == 0)
@@ -145,6 +146,7 @@ cc.Class({
                 food.parent = parentNode;
                 food.x = this._HeadBodyList[i].position.x;
                 food.y = this._HeadBodyList[i].position.y;
+                food.getComponent("Food").setType(1,Game);
                 //food.setLocalZOrder(-500);
                 // this._Camera.addTarget(food);
             }

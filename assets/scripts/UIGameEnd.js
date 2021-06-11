@@ -86,6 +86,7 @@ cc.Class({
 
     //返回
     onBack(event) {
+        return
         if (event) {
             event.stopPropagation();
         }

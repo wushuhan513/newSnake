@@ -81,20 +81,21 @@ cc.Class({
 
             }
             //碰到了食物
-            else if (groupName == 'food') {
-                //返回到池中
-                var isExist = this._Game.DelUseFood(other.node);
-                if (isExist) {
-                    var addWeight = other.node.getComponent(Food).getAddWeight();
-                    this._Snake.addWeight(addWeight);
-                }
-                //生成新食物
-                var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
-                if (uiGame) {
-                    uiGame.onSnakeHitFood(this._Snake);
-                    uiGame.checkAddFood();
-                }
-            }
+            // else if (groupName == 'food') {
+            //     //返回到池中
+            //     other.node.stopAllActions();
+            //     var isExist = this._Game.DelUseFood(other.node);
+            //     if (isExist) {
+            //         var addWeight = other.node.getComponent(Food).getAddWeight();
+            //         this._Snake.addWeight(addWeight);
+            //     }
+            //     //生成新食物
+            //     var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
+            //     if (uiGame) {
+            //         uiGame.onSnakeHitFood(this._Snake);
+            //         uiGame.checkAddFood();
+            //     }
+            // }
         }
         //头部警界盒
         else if (self.tag == 1000) {

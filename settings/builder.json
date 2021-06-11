@@ -1,8 +1,10 @@
 {
   "appKey": "",
   "appSecret": "",
-  "encryptJs": true,
-  "excludeScenes": [],
+  "encryptJs": false,
+  "excludeScenes": [
+    "8782f146-d412-4d82-9a33-ca1732c8cd4c"
+  ],
   "fb-instant-games": {},
   "includeAnySDK": false,
   "includeSDKBox": false,
@@ -26,8 +28,8 @@
     "orientation": "landscape left"
   },
   "renderMode": "0",
-  "startScene": "8782f146-d412-4d82-9a33-ca1732c8cd4c",
-  "title": "Main",
+  "startScene": "29efcd19-3e00-4d97-b0bf-0cc2755947db",
+  "title": "snake",
   "webOrientation": "auto",
   "wechatgame": {
     "REMOTE_SERVER_ROOT": "",
@@ -37,5 +39,37 @@
     "subContext": "SCSSub"
   },
   "xxteaKey": "5e37c5f6-80bc-44",
-  "zipCompressJs": true
+  "zipCompressJs": true,
+  "mainCompressionType": "default",
+  "mainIsRemote": false,
+  "nativeMd5Cache": false,
+  "android": {
+    "REMOTE_SERVER_ROOT": "",
+    "packageName": "org.cocos2d.demo"
+  },
+  "ios": {
+    "REMOTE_SERVER_ROOT": "",
+    "packageName": "org.cocos2d.demo"
+  },
+  "mac": {
+    "REMOTE_SERVER_ROOT": "",
+    "height": 720,
+    "packageName": "org.cocos2d.demo",
+    "width": 1280
+  },
+  "win32": {
+    "REMOTE_SERVER_ROOT": "",
+    "height": 720,
+    "width": 1280
+  },
+  "android-instant": {
+    "REMOTE_SERVER_ROOT": "",
+    "host": "",
+    "packageName": "org.cocos2d.demo",
+    "pathPattern": "",
+    "recordPath": "",
+    "scheme": "https",
+    "skipRecord": false
+  },
+  "appBundle": false
 }

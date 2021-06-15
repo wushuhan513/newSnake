@@ -24,15 +24,16 @@ cc.Class({
 
     //设置外型(1-20)
     setType(headType) {
-        if (headType < 1 || headType > 16) {
-            headType = 1;
-        }
-        var sprite = this.node.getComponent(cc.Sprite);
-        var atlasName = 'biaoqing_' + headType;
-        var spriteFrame = this.Atlas.getSpriteFrame(atlasName);
-        if (spriteFrame) {
-            sprite.spriteFrame = spriteFrame;
-        }
+        
+        // if (headType < 1 || headType > 16) {
+        //     headType = 1;
+        // }
+        // var sprite = this.node.getComponent(cc.Sprite);
+        // var atlasName = 'biaoqing_' + headType;
+        // var spriteFrame = this.Atlas.getSpriteFrame(atlasName);
+        // if (spriteFrame) {
+        //     sprite.spriteFrame = spriteFrame;
+        // }
     },
 
     //设置Snake

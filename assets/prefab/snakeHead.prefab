@@ -34,10 +34,13 @@
       },
       {
         "__id__": 9
+      },
+      {
+        "__id__": 10
       }
     ],
     "_prefab": {
-      "__id__": 10
+      "__id__": 11
     },
     "_opacity": 255,
     "_color": {
@@ -228,9 +231,7 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_spriteFrame": {
-      "__uuid__": "6ae0d177-2151-4c1f-b766-fe3e4dd33954"
-    },
+    "_spriteFrame": null,
     "_type": 0,
     "_sizeMode": 0,
     "_fillType": 0,
@@ -242,9 +243,7 @@
     "_fillStart": 0,
     "_fillRange": 0,
     "_isTrimmedMode": true,
-    "_atlas": {
-      "__uuid__": "49a3d1f5-6272-4b11-94c9-2004a52e4f22"
-    },
+    "_atlas": null,
     "_id": ""
   },
   {
@@ -294,6 +293,25 @@
       "y": 0
     },
     "_radius": 200,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.Animation",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "_defaultClip": {
+      "__uuid__": "4350984a-2e0b-4232-bc30-a090d917fdfc"
+    },
+    "_clips": [
+      {
+        "__uuid__": "4350984a-2e0b-4232-bc30-a090d917fdfc"
+      }
+    ],
+    "playOnLoad": true,
     "_id": ""
   },
   {

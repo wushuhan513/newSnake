@@ -45,6 +45,10 @@ var UIGame = cc.Class({
             default: null,
             type: cc.Node,
         },
+        rankingList: {
+            default: null,
+            type: cc.ScrollView,
+        },
         //摇杆
         GameJoystick: {
             default: null,
@@ -121,9 +125,9 @@ var UIGame = cc.Class({
         _KillShowTimer: 0,
         _SoundMgr: null,
         _IsFirstPause: false,
-        _normalFood:[],
-        _specialFood:[],
-    },  
+        _normalFood: [],
+        _specialFood: [],
+    },
 
     onLoad() {
         this._Game = GameGlobal.Game;
@@ -190,12 +194,13 @@ var UIGame = cc.Class({
                 newSnake.initMoveDir(cc.v2(1, 0));
                 var myName = this._DataMgr._MyNickName;
                 if (myName.length == 0) {
-                    myName = 'Me';
+                    myName = '快乐卡比兽';
                 }
                 newSnake.setName(myName, this.NameBaseNode);
                 newSnake.setMoveSpeed(300);
                 this._SnakeList.push(newSnake);
             } else {
+                // return
 
                 var newSnake = new Snake();
 
@@ -232,11 +237,11 @@ var UIGame = cc.Class({
         for (var i = 0; i < 80; ++i) {
             this.addFood();
         }
-        this.scheduleOnce(()=>{
+        this.scheduleOnce(() => {
             for (var i = 0; i < 10; ++i) {
                 this.addSpecialFood();
             }
-        },5)
+        }, 5)
         this.setGameState(GameState.GS_Game);
     },
 
@@ -292,7 +297,7 @@ var UIGame = cc.Class({
         food.setSiblingIndex(-500);
         // this.Camera.addTarget(food);
         var foodIns = food.getComponent(Food);
-        foodIns.setType(Math.floor(Math.random() * 5) + 1 , this);
+        foodIns.setType(3, this);
         // this._normalFood.push(food);
     },
 
@@ -317,12 +322,13 @@ var UIGame = cc.Class({
             this.addFood();
         }
     },
-    //检查并生成新食物
+    // 检查并生成新食物
     checkAddSpecailFood() {
-        var curFoodCount = this._specialFood.length;
-        if (curFoodCount < 10) {
-            this.addSpecialFood();
-        }
+        // var curFoodCount = this._specialFood.length;
+        // if (curFoodCount < 10) {
+        return
+        this.addSpecialFood();
+        // }
     },
 
     //复活重置游戏
@@ -377,7 +383,7 @@ var UIGame = cc.Class({
                 newSnake.init(mySkin, [mySkin, mySkin], this.AllObjNode, cc.v2(0, 0), this.Camera, true, this._MapSizeWidth, this._MapSizeHeight, i); //newSnake.init(4, [10, 20], this.AllObjNode, cc.v2(0, 0), this.Camera, true, this._MapSizeWidth, this._MapSizeHeight);
                 var myName = this._DataMgr._MyNickName;
                 if (myName.length == 0) {
-                    myName = 'Me';
+                    myName = '快乐卡比兽';
                 }
 
                 newSnake.initMoveDir(cc.v2(1, 0));
@@ -402,16 +408,29 @@ var UIGame = cc.Class({
 
         }
 
+        //初始化排行榜
+        let rankList = this.rankingList.content.children;
+        for (let i = 0; i < rankList.length; i++) {
+            let r = rankList[i];
+            if (rankScore[i]) {
+                r.active = true;
+                r.getChildByName("playerName").getComponent(cc.Label).string = (i + 1) + "、" + this._SnakeList[i]._PlayerName;
+                r.getChildByName("playerCount").getComponent(cc.Label).string = this._SnakeList[i]._score;
+            } else {
+                r.active = false;
+            }
+        }
+
         //初始化食物
         for (var i = 0; i < 80; ++i) {
             this.addFood();
         }
         //初始化特殊道具
-        this.scheduleOnce(()=>{
+        this.scheduleOnce(() => {
             for (var i = 0; i < 10; ++i) {
                 this.addSpecialFood();
             }
-        },5)
+        }, 5)
 
         this.setGameState(GameState.GS_Game);
 
@@ -427,7 +446,7 @@ var UIGame = cc.Class({
         newSnake.init(mySkin, [mySkin, mySkin], this.AllObjNode, cc.v2(0, 0), this.Camera, true, this._MapSizeWidth, this._MapSizeHeight, 0);
         var myName = this._DataMgr._MyNickName;
         if (myName.length == 0) {
-            myName = 'Me';
+            myName = '快乐卡比兽';
         }
 
         newSnake.initMoveDir(cc.v2(1, 0));
@@ -456,11 +475,15 @@ var UIGame = cc.Class({
     onSpeedBtnDown(event) {
         event.stopPropagation();
         this._IsSpeedDown = true;
+        var mySnake = this._SnakeList[0];
+        mySnake.showSnakeLight(true);
     },
     //关闭加速
     onSpeedBtnUp(event) {
         event.stopPropagation();
         this._IsSpeedDown = false;
+        var mySnake = this._SnakeList[0];
+        mySnake.showSnakeLight(false);
     },
 
     //主角被杀
@@ -546,6 +569,33 @@ var UIGame = cc.Class({
         this.NewerSprite.node.active = false;
         this._IsFirstPause = false;
     },
+    //更新排行榜积分
+    updateMainRank() {
+        let rankScore = new Array();
+        for (let i = 0; i < this._SnakeList.length; i++) {
+            let s = this._SnakeList[i];
+            rankScore.push([s._PlayerName, s._score])
+        }
+        rankScore.sort(this.rankType());
+        let rankList = this.rankingList.content.children;
+        for (let i = 0; i < rankList.length; i++) {
+            let r = rankList[i];
+            if (rankScore[i]) {
+                r.active = true;
+                let s = rankScore[i];
+                r.getChildByName("playerName").getComponent(cc.Label).string = (i + 1) + "、" + s[0];
+                r.getChildByName("playerCount").getComponent(cc.Label).string = s[1];
+            } else {
+                r.active = false;
+            }
+        }
+    },
+
+    rankType() {
+        return function (a, b) {
+            return b[1] - a[1]
+        }
+    },
 
     //设置游戏状态
     setGameState(state) {
@@ -589,6 +639,7 @@ var UIGame = cc.Class({
         }
     },
 
+
     onHideKillSprite() {
         this.KillSprite.node.active = false;
     },
@@ -624,17 +675,24 @@ var UIGame = cc.Class({
         this.Camera.node.position = this._SnakeList[0]._SnakeHead.position;
         var mySnake = this._SnakeList[0];
         var speed = mySnake._MoveSpeed;
+        let sStatus = mySnake._double_speed_status;
+        let max;
+        if (sStatus == true) {
+            max = mySnake._doubleSpeed;
+        } else {
+            max = 0;
+        }
         //微信QQ
         if (this._IsSpeedDown) {
             speed += 350;
-            if (speed > 700) {
-                speed = 700;
+            if (speed > 500 + max) {
+                speed = 500 + max;
             }
             mySnake.setMoveSpeed(speed);
         } else {
             speed -= 400 * dt;
-            if (speed < 300) {
-                speed = 300;
+            if (speed < 300 + max) {
+                speed = 300 + max;
             }
             mySnake.setMoveSpeed(speed);
         }

@@ -1,11 +1,13 @@
-const { log } = require('console');
+const {
+    log
+} = require('console');
 var SnakeBody = require('SnakeBody');
 var SnakeHead = require('SnakeHead');
+var UIType = require('UIType');
 
 cc.Class({
     //蛇头
-    properties:
-    {
+    properties: {
         _SnakeIndex: 0,
         _HeadType: -1,
         _BodyTypeList: [],
@@ -53,6 +55,15 @@ cc.Class({
         _BodySpace: 30,
         //保护罩
         _GodSprite: null,
+        _light_status: false,
+        _light_time: 0,
+        _doubleSpeed: 200,
+        _magnet_status: false,
+        _magnet_interval: 0,
+        _double_speed_status: false,
+        _double_score_status: false,
+        _score: 0,
+        _score_times: 1,
     },
 
     init(headType, bodyTypeList, parent, bornPos, camera, isSelf, mapWidth, mapHeight, index) {
@@ -146,16 +157,30 @@ cc.Class({
                 food.parent = parentNode;
                 food.x = this._HeadBodyList[i].position.x;
                 food.y = this._HeadBodyList[i].position.y;
-                food.getComponent("Food").setType(1,Game);
+                food.getComponent("Food").setType(4, Game);
                 //food.setLocalZOrder(-500);
                 // this._Camera.addTarget(food);
             }
         }
     },
 
+    initStatus() {
+        this._light_status = false;
+        this._light_time = 0;
+        this._doubleSpeed = 0;
+        this._magnet_status = false;
+        this._magnet_interval = 0;
+        this._double_speed_status = false;
+        this._double_score_status = false;
+        this._score = 0;
+        this._score_times = 1;
+    },
+
     //0:普通状态 1:无敌状态 (死亡刚复活时，给予2秒的无敌，不参与碰撞检测)
     setState(state) {
         this._State = state;
+
+        this.initStatus();
         if (state == 1) {
             this._StateTimer = 3;
             // this._GodSprite.active = true;
@@ -202,9 +227,8 @@ cc.Class({
             if (i == 0) {
                 var interval = bodyWidth / 3; //this._SnakeHead.width / 2 + body.width / 2;
                 // body.position = cc.pAdd(this._SnakeHead.position, cc.p.mul(moveDir, interval)); //this._SnakeHead.position; 
-            }
-            else {
-                var interval = - bodyWidth;
+            } else {
+                var interval = -bodyWidth;
                 //body.position =  cc.pAdd(this._HeadBodyList[i - 1].position, cc.p.mul(moveDir, interval));   
             }
         }
@@ -234,6 +258,10 @@ cc.Class({
         this._CurMoveIndex += 1;
     },
 
+    hideMagnet() {
+        this.node.getChildByName("magnet").active = false;
+    },
+
     //设置移动速度
     setMoveSpeed(speed) {
         var newSpeed = Math.floor(speed);
@@ -247,6 +275,14 @@ cc.Class({
         var bodyLen = this._HeadBodyList.length;
         for (var i = 0; i < bodyLen; ++i) {
             this._HeadBodyList[i].getComponent(SnakeBody).setMoveSpeed(newSpeed);
+        }
+    },
+
+    addSpeed(type) {
+        if (type == true) {
+            this.setMoveSpeed(this._MoveSpeed + this._doubleSpeed);
+        } else {
+            this.setMoveSpeed(this._MoveSpeed - this._doubleSpeed);
         }
     },
 
@@ -279,7 +315,7 @@ cc.Class({
     },
 
     //增加重量
-    addWeight(weight) {
+    addWeight(weight, score) {
         this._GrowingWeight += weight;
 
         //增加body的判定
@@ -293,7 +329,7 @@ cc.Class({
             for (var i = 0; i < addCount; ++i) {
                 var body = this._Game.GetFreeBody();
                 if (body) {
-                    console.log("------add body------");
+                    // console.log("------add body------");
                     var len = this._HeadBodyList.length;
                     body.parent = this._SnakeHead.parent;
                     var snakeBody = body.getComponent(SnakeBody);
@@ -308,7 +344,7 @@ cc.Class({
                     var typeIndex = Math.floor(len / 3) % 2;
                     //设置增加的身体外形
                     snakeBody.setType(this._BodyTypeList[typeIndex]);
-                    console.log(this._BodyTypeList[typeIndex]);
+                    // console.log(this._BodyTypeList[typeIndex]);
 
                     //位置
                     var preBody = this._HeadBodyList[len - 1];
@@ -326,6 +362,9 @@ cc.Class({
             }
             this.changeSnakeSize();
         }
+        this._score += score * this._score_times;
+        var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
+        uiGame.updateMainRank();
     },
 
     //更新蛇的粗细
@@ -386,8 +425,7 @@ cc.Class({
                 var aiType = Math.floor(Math.random() * 3);
                 this.changeAI(aiType);
             }
-        }
-        else if (this._CurAIType == 2) {
+        } else if (this._CurAIType == 2) {
             this._MoveVec.rotateSelf(this._CurAITurnSpeed * delta);
             this.setOtherMoveDir(this._MoveVec.x, this._MoveVec.y);
 
@@ -495,6 +533,67 @@ cc.Class({
 
     },
 
+    showSnakeLight(type) {
+        this._light_time = 0;
+        this._light_status = type;
+        if (type == false) {
+            this._HeadBodyList.forEach((s) => {
+                s.getChildByName("light").active = false;
+            })
+        }
+    },
+
+    lightShow(dt) {
+        let body_list = this._HeadBodyList;
+        let count = Math.ceil(body_list.length / 10);
+        if (this._light_time < 10) {
+            this._light_time += dt * 20;
+        } else {
+            this._light_time = 0;
+        }
+        for (let i = 0; i < body_list.length; i++) {
+            body_list[i].getChildByName("light").active = false;
+            for (let o = 0; o < count; o++) {
+                if (body_list[o * 10 + Math.floor(this._light_time)]) {
+                    body_list[o * 10 + Math.floor(this._light_time)].getChildByName("light").active = true;
+                }
+            }
+        }
+    },
+
+    showSpecialState(delta) {
+        //计算双份积分时长
+        if (this._double_score_status == true) {
+            if (this._double_interval > 0) {
+                this._double_interval -= delta;
+            } else {
+                this._double_score_status = false;
+                this._score_times = 1;
+            }
+        }
+        //计算磁铁时间时长
+        if (this._magnet_status == true) {
+            if (this._magnet_interval > 0) {
+                this._magnet_interval -= delta;
+            } else {
+                this._SnakeHead.getChildByName("magnet").active = false;
+                this._magnet_status = false;
+            }
+        }
+        if (this._double_speed_status == true) {
+            //计算加速时间时长
+            if (this._speed_interval > 0) {
+                this._speed_interval -= delta;
+            } else {
+                this.addSpeed(false);
+                this._double_speed_status = false;
+            }
+        }
+        if (this._light_status == true) {
+            this.lightShow(delta);
+        }
+    },
+
     FixDir(dir) {
         if (dir.x == 0 && dir.y == 0) {
             dir.x = 0.001;
@@ -529,8 +628,7 @@ cc.Class({
                 this._SnakeHead.dispatchEvent(eventObj);
                 return false;
             }
-        }
-        else {
+        } else {
             //其它玩家
             if (Math.abs(this._SnakeHead.x) > this._MapWidth / 2 - 200) {
                 if (Math.abs(this._SnakeHead.y) > this._MapHeight / 2 - 200) {
@@ -563,14 +661,14 @@ cc.Class({
         var moveVec = this._MoveVec.mul(this._MoveSpeed * delta);
 
         this._SnakeHead.position = this._SnakeHead.position.addSelf(moveVec); // cc.pAdd(this._SnakeHead.position, moveVec);
-        this._AttachLabel.x = this._SnakeHead.x  /* * (moveVec.x >= 0 ? -1 : 1)*/;
-        this._AttachLabel.y = this._SnakeHead.y + 80  /** (moveVec.y >= 0 ? -1 : 1) */;
+        this._AttachLabel.x = this._SnakeHead.x /* * (moveVec.x >= 0 ? -1 : 1)*/ ;
+        this._AttachLabel.y = this._SnakeHead.y + 80 /** (moveVec.y >= 0 ? -1 : 1) */ ;
 
         //更新身体位置
         var bodyLen = this._HeadBodyList.length;
         for (var i = 0; i < bodyLen; ++i) {
             var snakeBody = this._HeadBodyList[i].getComponent(SnakeBody);
-            snakeBody.updateBody(delta, this._SnakeHead, this._HeadBodyList, this._LastMoveVec, this._SnakeHead.position /*this._HeadPrePositon*/, needUpdateBody);
+            snakeBody.updateBody(delta, this._SnakeHead, this._HeadBodyList, this._LastMoveVec, this._SnakeHead.position /*this._HeadPrePositon*/ , needUpdateBody);
         }
 
         return true;
@@ -609,6 +707,7 @@ cc.Class({
         this._GodSprite.height = radius;
     },
 
+
     //新的更新
     update(delta) {
         if (delta == 0) {
@@ -626,8 +725,7 @@ cc.Class({
                 this._SnakeHead.dispatchEvent(eventObj);
                 return false;
             }
-        }
-        else {
+        } else {
             //其它玩家
             // if(Math.abs(this._SnakeHead.x) > this._MapWidth / 2 - 200)
             // {
@@ -685,8 +783,8 @@ cc.Class({
         var moveVec = this._MoveVec.mul(moveDis);
 
         this._SnakeHead.position = this._SnakeHead.position.addSelf(moveVec); // cc.pAdd(this._SnakeHead.position, moveVec);
-        this._AttachLabel.x = this._SnakeHead.x  /* * (moveVec.x >= 0 ? -1 : 1)*/;
-        this._AttachLabel.y = this._SnakeHead.y + 80  /** (moveVec.y >= 0 ? -1 : 1) */;
+        this._AttachLabel.x = this._SnakeHead.x /* * (moveVec.x >= 0 ? -1 : 1)*/ ;
+        this._AttachLabel.y = this._SnakeHead.y + 80 /** (moveVec.y >= 0 ? -1 : 1) */ ;
 
         var newPos;
         //更新身体位置
@@ -709,6 +807,7 @@ cc.Class({
             // snakeBody.updateBody(delta, this._SnakeHead, this._HeadBodyList, this._MoveVec, this._SnakeHead.position /*this._HeadPrePositon*/, needUpdateBody);
         }
 
+        this.showSpecialState(delta);
 
         //状态重置
         this._StateTimer -= delta;
@@ -779,8 +878,8 @@ cc.Class({
         var moveVec = this._MoveVec.mul(this._MoveSpeed * delta);
 
         this._SnakeHead.position = this._SnakeHead.position.addSelf(moveVec); // cc.pAdd(this._SnakeHead.position, moveVec);
-        this._AttachLabel.x = this._SnakeHead.x  /* * (moveVec.x >= 0 ? -1 : 1)*/;
-        this._AttachLabel.y = this._SnakeHead.y + 80  /** (moveVec.y >= 0 ? -1 : 1) */;
+        this._AttachLabel.x = this._SnakeHead.x /* * (moveVec.x >= 0 ? -1 : 1)*/ ;
+        this._AttachLabel.y = this._SnakeHead.y + 80 /** (moveVec.y >= 0 ? -1 : 1) */ ;
 
 
         //更新身体位置

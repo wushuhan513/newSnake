@@ -19,6 +19,7 @@ cc.Class({
         _foodLife: true,
         _foodStatus: false,
         _foodType: null,
+        _score:0,
     },
 
     // onLoad () {},
@@ -28,28 +29,28 @@ cc.Class({
     //
     setType(foodType, game) {
         this._Game = game;
-        if (foodType < 1 || foodType > 5) {
-            foodType = 1;
-        }
-        this._Type = foodType;
-        this._foodLife = true;
-        var sprite = this.node.getComponent(cc.Sprite);
-        var atlasName = 'food_' + foodType;
-        var spriteFrame = this.Atlas.getSpriteFrame(atlasName);
-        if (spriteFrame) {
-            sprite.spriteFrame = spriteFrame;
-        }
+        // this._Type = foodType;
+        // this._foodLife = true;
+        // var sprite = this.node.getComponent(cc.Sprite);
+        // var atlasName = 'food_' + foodType;
+        // var spriteFrame = this.Atlas.getSpriteFrame(atlasName);
+        // if (spriteFrame) {
+        //     sprite.spriteFrame = spriteFrame;
+        // }
         if (this._Game) {
             this._foodStatus = true;
         }
+        this._foodLife = true;
+        this.node.getComponent(cc.Sprite).spriteFrame = this.specialType[foodType];
         this._foodType = "normal";
+        this._score = foodType;
     },
 
     setSpecialType(game) {
         this._Game = game;
         this._foodLife = true;
         let type = Math.floor(Math.random() * 3);
-        type = type > 3 ? 1 : type;
+        type = type > 2 ? 1 : type;
         let text;
         switch (type) {
             case 0:
@@ -122,6 +123,7 @@ cc.Class({
             let distance = Math.sqrt(x * x + y * y);
             if (distance < times * (head.width + this.node.width) && this._foodLife == true) {
                 this._foodLife = false;
+                this.node.stopAllActions();
                 cc.tween(this.node)
                     .to(0.1, {
                         position: cc.v2(posH.x, posH.y)
@@ -142,7 +144,7 @@ cc.Class({
         let snake = head.getComponent("SnakeHead")._Snake;
         if (isExist) {
             var addWeight = this.getAddWeight();
-            snake.addWeight(addWeight);
+            snake.addWeight(addWeight,this._score);
         }
         //生成新食物
         var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
@@ -152,17 +154,34 @@ cc.Class({
         }
     },
 
-    getmagnet() {
-
+    //加速效果
+    getAccelerate(s) {
+        if (s._double_speed_status == false) {
+            s._double_speed_status = true;
+            s.addSpeed(true);
+        }
+        s._speed_interval = 5;
     },
-    getDouble() {
-
+    //双倍积分
+    getDouble(s) {
+        if (s._double_score_status == false) {
+            s._double_score_status = true;
+            s._score_times = 2;
+        }
+        s._double_interval = 5;
     },
-    getAccelerate() {
-
+    //磁铁效果
+    getmagnet(head, s) {
+        if (s._magnet_status == false) {
+            s._magnet_status = true;
+            head.getChildByName("magnet").active = true;
+        }
+        s._magnet_interval = 5;
     },
     getSpecialFood(head) {
         GameGlobal.Game.DelUseFood(this.node);
+        let snake = head.getComponent("SnakeHead")._Snake;
+        var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
         switch (this._Type) {
             case "magnet":
                 this.getmagnet(head, snake);
@@ -174,9 +193,7 @@ cc.Class({
                 this.getAccelerate(snake);
                 break;
         }
-        let snake = head.getComponent("SnakeHead")._Snake;
         //生成新食物
-        var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
         if (uiGame) {
             uiGame.onSnakeHitFood(snake);
             uiGame.checkAddSpecailFood();

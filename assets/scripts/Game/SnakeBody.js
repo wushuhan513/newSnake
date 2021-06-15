@@ -29,15 +29,15 @@ cc.Class({
 
     //设置外型
     setType(bodyType) {
-        if (bodyType < 1 || bodyType > 16) {
-            bodyType = 1;
-        }
-        var sprite = this.node.getComponent(cc.Sprite);
-        var atlasName = 'body_' + bodyType;
-        var spriteFrame = this.Atlas.getSpriteFrame(atlasName);
-        if (spriteFrame) {
-            sprite.spriteFrame = spriteFrame;
-        }
+        // if (bodyType < 1 || bodyType > 16) {
+        //     bodyType = 1;
+        // }
+        // var sprite = this.node.getComponent(cc.Sprite);
+        // var atlasName = 'body_' + bodyType;
+        // var spriteFrame = this.Atlas.getSpriteFrame(atlasName);
+        // if (spriteFrame) {
+        //     sprite.spriteFrame = spriteFrame;
+        // }
     },
 
     //设置Snake

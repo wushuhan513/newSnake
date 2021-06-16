@@ -120,7 +120,6 @@ cc.Class({
         event.stopPropagation();
         var uiMgr = GameGlobal.UIManager;
         uiMgr.closeUI(UIType.UIType_GameOver);
-
         var uiGame = uiMgr.getUI(UIType.UIType_Game);
         uiGame.setGameState(4);
     },

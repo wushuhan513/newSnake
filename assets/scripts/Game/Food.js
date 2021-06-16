@@ -24,7 +24,9 @@ cc.Class({
 
     // onLoad () {},
 
-    start() {},
+    start() {
+
+    },
 
     //
     setType(foodType, game) {
@@ -72,8 +74,8 @@ cc.Class({
     },
 
     moveFood() {
-        let width = this._Game.node.width - 40;
-        let height = this._Game.node.height - 40;
+        let width = this._Game.node.getChildByName("map").width - 40;
+        let height = this._Game.node.getChildByName("map").height - 40;
         let x, y;
         if (Math.random() > 0.5) {
             x = -this.node.x;
@@ -96,7 +98,7 @@ cc.Class({
     //食物增加的重量,重量影响长度
     getAddWeight() {
         // return 3;
-        return this._Type * 0.5;
+        return this._score * 0.5;
     },
     //
     update(dt) {
@@ -113,7 +115,7 @@ cc.Class({
             let head = s._SnakeHead;
             let times = 1;
             if (head.getChildByName("magnet").active == true) {
-                times = 2;
+                times = 1.5;
             } else {
                 times = 1;
             }
@@ -125,7 +127,7 @@ cc.Class({
                 this._foodLife = false;
                 this.node.stopAllActions();
                 cc.tween(this.node)
-                    .to(0.1, {
+                    .to(0.15, {
                         position: cc.v2(posH.x, posH.y)
                     })
                     .call(() => {
@@ -160,7 +162,7 @@ cc.Class({
             s._double_speed_status = true;
             s.addSpeed(true);
         }
-        s._speed_interval = 5;
+        s._speed_interval = 10;
     },
     //双倍积分
     getDouble(s) {
@@ -168,7 +170,7 @@ cc.Class({
             s._double_score_status = true;
             s._score_times = 2;
         }
-        s._double_interval = 5;
+        s._double_interval = 10;
     },
     //磁铁效果
     getmagnet(head, s) {
@@ -176,12 +178,13 @@ cc.Class({
             s._magnet_status = true;
             head.getChildByName("magnet").active = true;
         }
-        s._magnet_interval = 5;
+        s._magnet_interval = 10;
     },
     getSpecialFood(head) {
         GameGlobal.Game.DelUseFood(this.node);
         let snake = head.getComponent("SnakeHead")._Snake;
         var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
+        GameGlobal.VoiceManager.playEffect("吃道具音效",snake);
         switch (this._Type) {
             case "magnet":
                 this.getmagnet(head, snake);

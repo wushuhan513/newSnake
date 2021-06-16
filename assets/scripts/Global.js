@@ -15,6 +15,12 @@ cc.Class({
             default: null,
             type: cc.Component,
         },
+        //音效管理器
+        VoiceManager:
+        {
+            default: null,
+            type: cc.Component,
+        },
         //UI管理器
         UIManager:
         {
@@ -47,7 +53,7 @@ cc.Class({
         this.DataManager = cc.find('DataManager').getComponent('DataManager');
         this.SoundManager = cc.find('SoundManager').getComponent('SoundManager');
         this.UIManager = cc.find('Canvas/UIManager').getComponent('UIManager');
-
+        this.VoiceManager = cc.find('VoiceManager').getComponent('Voice');
         this.Game = cc.find('Game').getComponent('Game');
 
 

@@ -3,11 +3,13 @@ const {
 } = require('console');
 var SnakeBody = require('SnakeBody');
 var SnakeHead = require('SnakeHead');
+
 var UIType = require('UIType');
 
 cc.Class({
     //蛇头
     properties: {
+        _VoiceMgr:null,
         _SnakeIndex: 0,
         _HeadType: -1,
         _BodyTypeList: [],
@@ -67,13 +69,18 @@ cc.Class({
     },
 
     init(headType, bodyTypeList, parent, bornPos, camera, isSelf, mapWidth, mapHeight, index) {
+        this._VoiceMgr = GameGlobal.VoiceManager;
         this._SnakeIndex = index;
         this._State = 0;
         this._KillCount = 0;
         this._Game = GameGlobal.Game;
         this._Camera = camera;
         this._PlayerSelf = isSelf;
-
+        this._light_status = false;
+        this._doubleSpeed = 200;
+        this._magnet_status = false;
+        this._double_score_status = false;
+        this._double_score_status = false;
         this._MapWidth = mapWidth;
         this._MapHeight = mapHeight;
 
@@ -104,7 +111,7 @@ cc.Class({
                 var snakeBody = body.getComponent(SnakeBody);
                 snakeBody.setSnake(this);
                 snakeBody.setBodyIndex(i);
-                body.setSiblingIndex(-i);
+                body.zIndex = -i - 1;
                 // if (camera) {
                 //     camera.addTarget(body);
                 // }
@@ -120,7 +127,6 @@ cc.Class({
             this._GodSprite.active = false;
             // camera.addTarget(this._GodSprite)
         }
-
     },
 
     setName(name, parentNode) {
@@ -316,7 +322,7 @@ cc.Class({
 
     //增加重量
     addWeight(weight, score) {
-        this._GrowingWeight += weight;
+        this._GrowingWeight += weight * this._score_times;
 
         //增加body的判定
         var addCount = this._GrowingWeight / 20;
@@ -337,7 +343,7 @@ cc.Class({
                     snakeBody.setSnake(this)
                     snakeBody.setBodyIndex(len);
                     snakeBody.setMoveSpeed(this._MoveSpeed);
-                    body.setSiblingIndex(-len);
+                    body.zIndex = -len - 1;
 
                     // this._Camera.addTarget(body);
 
@@ -365,6 +371,7 @@ cc.Class({
         this._score += score * this._score_times;
         var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
         uiGame.updateMainRank();
+        this._VoiceMgr.playEffect("吃中金币",this);
     },
 
     //更新蛇的粗细
@@ -828,6 +835,10 @@ cc.Class({
         }
 
         return true;
+    },
+
+    hideMagnet() {
+        this._SnakeHead.getChildByName("magnet").active = false;
     },
 
     updateShow(delta) {

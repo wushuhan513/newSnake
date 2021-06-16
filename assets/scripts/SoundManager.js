@@ -23,8 +23,6 @@ cc.Class({
         _CurPlayMusic: -1,
     },
 
-    // LIFE-CYCLE CALLBACKS:
-
     onLoad ()
     {
         cc.log('SoundManager onLoad----------------------------------');    

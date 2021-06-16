@@ -45,10 +45,6 @@ var UIGame = cc.Class({
             default: null,
             type: cc.Node,
         },
-        rankingList: {
-            default: null,
-            type: cc.ScrollView,
-        },
         //摇杆
         GameJoystick: {
             default: null,
@@ -107,6 +103,11 @@ var UIGame = cc.Class({
             type: cc.Node,
         },
 
+        otherRankList:{
+            default: null,
+            type :cc.Node,
+        },
+
         _SnakeList: [],
         _MapSizeWidth: 0,
         _MapSizeHeight: 0,
@@ -115,8 +116,8 @@ var UIGame = cc.Class({
         //加速是否开启
         _IsSpeedDown: false,
         _DataMgr: null,
-        _CurTime: 120,
-
+        _CurTime: 360,
+        _VoiceMgr:null,
         _RankUpdateTimer: 0,
         _RankInfoList: [],
         _NameList: [],
@@ -127,6 +128,7 @@ var UIGame = cc.Class({
         _IsFirstPause: false,
         _normalFood: [],
         _specialFood: [],
+        _mySnake:null,
     },
 
     onLoad() {
@@ -163,14 +165,14 @@ var UIGame = cc.Class({
         this._SoundMgr = GameGlobal.SoundManager;
         this._SoundMgr.stopAll();
         this._SoundMgr.playSound(SoundType.SoundType_GameBg);
-
+        this._VoiceMgr = GameGlobal.VoiceManager;
         this.KillSprite.node.active = false;
 
         var manager = cc.director.getCollisionManager();
         manager.enabled = true;
         this._KillShowTimer = 0;
 
-        this._CurTime = 120;
+        this._CurTime = 360;
 
         if (this._DataMgr._CurSelectMode == 0) {
             this.TimerLabel.node.active = true;
@@ -199,6 +201,7 @@ var UIGame = cc.Class({
                 newSnake.setName(myName, this.NameBaseNode);
                 newSnake.setMoveSpeed(300);
                 this._SnakeList.push(newSnake);
+                this._mySnake = newSnake;
             } else {
                 // return
 
@@ -241,7 +244,7 @@ var UIGame = cc.Class({
             for (var i = 0; i < 10; ++i) {
                 this.addSpecialFood();
             }
-        }, 5)
+        }, 1)
         this.setGameState(GameState.GS_Game);
     },
 
@@ -261,7 +264,7 @@ var UIGame = cc.Class({
 
     onDestroy() {
         //重置所有蛇
-        for (var i = 0; i < 10; ++i) {
+        for (var i = 0; i < this._SnakeList.length; ++i) {
             this._SnakeList[i].deadReset();
         }
         this._SnakeList = [];
@@ -324,16 +327,12 @@ var UIGame = cc.Class({
     },
     // 检查并生成新食物
     checkAddSpecailFood() {
-        // var curFoodCount = this._specialFood.length;
-        // if (curFoodCount < 10) {
-        return
         this.addSpecialFood();
-        // }
     },
 
     //复活重置游戏
     reliveResetGame() {
-        var selfSnake = this._SnakeList[0];
+        var selfSnake = this._mySnake;
         if (selfSnake) {
             selfSnake.resetPos(cc.v2(0, 0));
             selfSnake.initMoveDir(cc.v2(1, 0));
@@ -346,7 +345,7 @@ var UIGame = cc.Class({
 
     //获取主角的击杀，长度
     getMySnakeLen() {
-        var selfSnake = this._SnakeList[0];
+        var selfSnake = this._mySnake;
         if (selfSnake) {
             return selfSnake.getSnakeLength();
         }
@@ -354,7 +353,7 @@ var UIGame = cc.Class({
     },
 
     getMySnakeKill() {
-        var selfSnake = this._SnakeList[0];
+        var selfSnake = this._mySnake;
         if (selfSnake) {
             return selfSnake._KillCount;
         }
@@ -363,11 +362,10 @@ var UIGame = cc.Class({
 
     //重置游戏
     resetGameEnd() {
-
-        this._CurTime = 120;
+        this._CurTime = 360;
 
         //重置所有蛇
-        for (var i = 0; i < 10; ++i) {
+        for (var i = 0; i < this._SnakeList.length; ++i) {
             this._SnakeList[i].deadReset();
         }
         this._SnakeList = [];
@@ -385,17 +383,17 @@ var UIGame = cc.Class({
                 if (myName.length == 0) {
                     myName = '快乐卡比兽';
                 }
-
+                // newSnake.hideManget();
                 newSnake.initMoveDir(cc.v2(1, 0));
                 newSnake.setName(myName, this.NameBaseNode);
                 newSnake.setMoveSpeed(300);
                 newSnake.changeSnakeSize();
                 this._SnakeList.push(newSnake);
+                this._mySnake = newSnake;
             } else {
-
                 var newSnake = new Snake();
-
-                //初始位置：
+                // newSnake.hideManget();
+                // 初始位置：
                 newSnake.init(this._HeadList[i - 1], this._BodyList[i - 1], this.AllObjNode, snakeStartPos[i - 1], this.Camera, false, this._MapSizeWidth, this._MapSizeHeight, i);
                 var ranDir = cc.v2(1, 0);
                 ranDir.rotateSelf(Math.random() * 3.14);
@@ -409,10 +407,10 @@ var UIGame = cc.Class({
         }
 
         //初始化排行榜
-        let rankList = this.rankingList.content.children;
+        let rankList = this.otherRankList.children;
         for (let i = 0; i < rankList.length; i++) {
             let r = rankList[i];
-            if (rankScore[i]) {
+            if (this._SnakeList[i]) {
                 r.active = true;
                 r.getChildByName("playerName").getComponent(cc.Label).string = (i + 1) + "、" + this._SnakeList[i]._PlayerName;
                 r.getChildByName("playerCount").getComponent(cc.Label).string = this._SnakeList[i]._score;
@@ -431,32 +429,29 @@ var UIGame = cc.Class({
                 this.addSpecialFood();
             }
         }, 5)
-
         this.setGameState(GameState.GS_Game);
-
     },
 
     //重置游戏
     resetGame1() {
-        this._SnakeList[0].deadReset();
-        this._SnakeList[0] = null;
+        // this._mySnake = null;
 
-        var newSnake = new Snake();
-        var mySkin = GameGlobal.DataManager._CurMySKinIndex + 1;
-        newSnake.init(mySkin, [mySkin, mySkin], this.AllObjNode, cc.v2(0, 0), this.Camera, true, this._MapSizeWidth, this._MapSizeHeight, 0);
-        var myName = this._DataMgr._MyNickName;
-        if (myName.length == 0) {
-            myName = '快乐卡比兽';
-        }
-
-        newSnake.initMoveDir(cc.v2(1, 0));
-        newSnake.setName(myName, this.NameBaseNode);
-        newSnake.setMoveSpeed(300);
-        newSnake.changeSnakeSize();
-
-        this._SnakeList[0] = newSnake;
+        // var newSnake = new Snake();
+        // var mySkin = GameGlobal.DataManager._CurMySKinIndex + 1;
+        // newSnake.init(mySkin, [mySkin, mySkin], this.AllObjNode, cc.v2(0, 0), this.Camera, true, this._MapSizeWidth, this._MapSizeHeight, 0);
+        // var myName = this._DataMgr._MyNickName;
+        // if (myName.length == 0) {
+        //     myName = '快乐卡比兽';
+        // }
+        // newSnake.hideMagnet();
+        // newSnake.initMoveDir(cc.v2(1, 0));
+        // newSnake.setName(myName, this.NameBaseNode);
+        // newSnake.setMoveSpeed(300);
+        // newSnake.changeSnakeSize();
+        // this._mySnake = newSnake;
         //无敌
-        newSnake.setState(1);
+        // newSnake.setState(1);
+        console.log(this._mySnake);
         this.setGameState(GameState.GS_Game);
     },
 
@@ -467,7 +462,7 @@ var UIGame = cc.Class({
         if (this._SnakeList.length <= 0) {
             return;
         }
-        var playerSnake = this._SnakeList[0];
+        var playerSnake = this._mySnake;
         playerSnake.setMoveDir(offX, offY, delta, angle);
     },
 
@@ -475,21 +470,21 @@ var UIGame = cc.Class({
     onSpeedBtnDown(event) {
         event.stopPropagation();
         this._IsSpeedDown = true;
-        var mySnake = this._SnakeList[0];
+        var mySnake = this._mySnake;
         mySnake.showSnakeLight(true);
     },
     //关闭加速
     onSpeedBtnUp(event) {
         event.stopPropagation();
         this._IsSpeedDown = false;
-        var mySnake = this._SnakeList[0];
+        var mySnake = this._mySnake;
         mySnake.showSnakeLight(false);
     },
 
     //主角被杀
     onSelfBeKilled(event) {
         event.stopPropagation();
-
+        this._VoiceMgr.playEffect("自己死亡音效",this._mySnake);
         this.setGameState(GameState.GS_GameOver);
     },
 
@@ -503,7 +498,7 @@ var UIGame = cc.Class({
 
         killedSnake.addKillCount();
         //广播消息
-        if (killedSnake === this._SnakeList[0]) {
+        if (killedSnake === this._mySnake) {
             this.updateSelfSnakeInfo();
         }
 
@@ -553,13 +548,13 @@ var UIGame = cc.Class({
     onMeBound(event) {
 
         event.stopPropagation();
-
+        this._VoiceMgr.playEffect("自己死亡音效",this._mySnake);
         this.setGameState(GameState.GS_GameOver);
     },
 
     //蛇碰到了食物的回调
     onSnakeHitFood(snake) {
-        if (snake === this._SnakeList[0]) {
+        if (snake === this._mySnake) {
             this.updateSelfSnakeInfo();
         }
     },
@@ -576,17 +571,15 @@ var UIGame = cc.Class({
             let s = this._SnakeList[i];
             rankScore.push([s._PlayerName, s._score])
         }
+
         rankScore.sort(this.rankType());
-        let rankList = this.rankingList.content.children;
+        let rankList = this.otherRankList.children;
         for (let i = 0; i < rankList.length; i++) {
             let r = rankList[i];
             if (rankScore[i]) {
-                r.active = true;
                 let s = rankScore[i];
                 r.getChildByName("playerName").getComponent(cc.Label).string = (i + 1) + "、" + s[0];
                 r.getChildByName("playerCount").getComponent(cc.Label).string = s[1];
-            } else {
-                r.active = false;
             }
         }
     },
@@ -603,11 +596,10 @@ var UIGame = cc.Class({
             return;
 
         this._GameState = state;
-
         if (this._GameState == GameState.GS_Game) {
             this.updateSelfSnakeInfo();
         } else if (this._GameState == GameState.GS_GameOver) {
-            var selfSnake = this._SnakeList[0];
+            var selfSnake = this._mySnake;
             this._DataMgr.CurScore = selfSnake.getSnakeLength();
             var self = this;
 
@@ -617,10 +609,9 @@ var UIGame = cc.Class({
             // GameGlobal.Net.requestScore(selfSnake.getSnakeLength());
             GameGlobal.UIManager.openUI(UIType.UIType_GameOver);
         } else if (this._GameState == GameState.GS_GameEnd) {
-            var selfSnake = this._SnakeList[0];
+            var selfSnake = this._mySnake;
             this._DataMgr.CurScore = selfSnake.getSnakeLength();
             var self = this;
-
             // GameGlobal.WeiXinPlatform.postScoreToPlatform(self._DataMgr.getCurScore(), this._DataMgr._GameStartTime);
 
             //写分数
@@ -631,7 +622,7 @@ var UIGame = cc.Class({
     },
 
     updateSelfSnakeInfo() {
-        var selfSnake = this._SnakeList[0];
+        var selfSnake = this._mySnake;
         if (selfSnake) {
             this.KillLabel.string = selfSnake._KillCount;
             this.LenLabel.string = selfSnake.getSnakeLength();
@@ -672,8 +663,8 @@ var UIGame = cc.Class({
         //食物
 
         //摄像机节点的位置更新
-        this.Camera.node.position = this._SnakeList[0]._SnakeHead.position;
-        var mySnake = this._SnakeList[0];
+        this.Camera.node.position = this._mySnake._SnakeHead.position;
+        var mySnake = this._mySnake;
         var speed = mySnake._MoveSpeed;
         let sStatus = mySnake._double_speed_status;
         let max;
@@ -723,7 +714,7 @@ var UIGame = cc.Class({
             this._RankUpdateTimer = 1.2;
 
             var sortSnakeList = [];
-            sortSnakeList.push(this._SnakeList[0], this._SnakeList[1], this._SnakeList[2], this._SnakeList[3], this._SnakeList[4]);
+            sortSnakeList.push(this._mySnake, this._SnakeList[1], this._SnakeList[2], this._SnakeList[3], this._SnakeList[4]);
             sortSnakeList.push(this._SnakeList[5], this._SnakeList[6], this._SnakeList[7], this._SnakeList[8], this._SnakeList[9]);
             sortSnakeList.sort(function (a, b) {
                 if (a == undefined && b == undefined) {
@@ -740,7 +731,7 @@ var UIGame = cc.Class({
             // for (var i = 0; i < sortSnakeList.length; ++i) {
             //     var snake = sortSnakeList[i];
             //     var color = cc.Color.WHITE;
-            //     if (snake == this._SnakeList[0]) {
+            //     if (snake == this._mySnake) {
             //         color = cc.Color.GREEN;
             //     }
             //     var infoList = this._RankInfoList[i];

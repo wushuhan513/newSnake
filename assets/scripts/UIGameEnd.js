@@ -60,7 +60,7 @@ cc.Class({
 
         var uiMgr = GameGlobal.UIManager;
         var uiGame = uiMgr.getUI(UIType.UIType_Game);
-
+        // uiGame.reliveResetGame();
         this.RewardGoldLabel.string = "";
         this.LenLabel.string = "" + uiGame.getMySnakeLen();
         this.KillLabel.string = "" + uiGame.getMySnakeKill();
@@ -113,7 +113,7 @@ cc.Class({
         uiMgr.closeUI(UIType.UIType_GameEnd);
         var uiGame = uiMgr.getUI(UIType.UIType_Game);
         uiGame.resetGameEnd();
-
+        uiGame.reliveResetGame();
     },
 
     // update (dt) {},

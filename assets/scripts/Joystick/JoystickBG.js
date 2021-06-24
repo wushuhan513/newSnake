@@ -9,8 +9,7 @@ cc.Class({
             type: cc.Node,
             displayName: '摇杆节点',
         },
-        callBackObj:
-        {
+        callBackObj: {
             default: null,
         },
 
@@ -36,10 +35,10 @@ cc.Class({
         },
 
 
-        _speed: 0,          //实际速度
-        _speed1: 1,         //一段速度
-        _speed2: 1,         //二段速度
-        _opacity: 0,        //透明度
+        _speed: 0, //实际速度
+        _speed1: 1, //一段速度
+        _speed2: 1, //二段速度
+        _opacity: 0, //透明度
     },
 
 
@@ -85,7 +84,6 @@ cc.Class({
 
             var offX = Math.cos(this._angle * RToD);
             var offY = Math.sin(this._angle * RToD);
-
             this.callBackObj.joyCallback(offX, offY, delta, this._angle);
         }
 
@@ -122,8 +120,7 @@ cc.Class({
         //如果半径
         if (distance < this._radius) {
             this._speed = this._speed1;
-        }
-        else {
+        } else {
             this._speed = this._speed2;
         }
     },
@@ -156,8 +153,7 @@ cc.Class({
         var posY = this.node.getPosition().y + touchPos.y;
         if (radius > distance) {
             this.dot.setPosition(cc.v2(posX, posY));
-        }
-        else {
+        } else {
             //控杆永远保持在圈内，并在圈内跟随触摸更新角度
             var x = this.node.getPosition().x + Math.cos(this._getRadian(cc.v2(posX, posY))) * radius;
             var y = this.node.getPosition().y + Math.sin(this._getRadian(cc.v2(posX, posY))) * radius;
@@ -167,7 +163,6 @@ cc.Class({
         this._getAngle(cc.v2(posX, posY));
         //设置实际速度
         this._setSpeed(cc.v2(posX, posY));
-
     },
 
     _touchEndEvent: function () {

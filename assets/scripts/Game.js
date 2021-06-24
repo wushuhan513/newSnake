@@ -17,6 +17,8 @@ cc.Class({
         SnakeNamePrefab: cc.Prefab,
         //保护罩
         GodSpritePrefab: cc.Prefab,
+        //小金币
+        coinPrefab: cc.Prefab,
 
         //--------------------------
         //蛇头列表
@@ -24,6 +26,10 @@ cc.Class({
             default: [],
         },
         _SnakeHeadFreeList: {
+            default: [],
+        },
+        //金币列表
+        _SnakeCoinList: {
             default: [],
         },
 
@@ -39,6 +45,10 @@ cc.Class({
 
         //食物列表
         _SnakeFoodUseList: {
+            default: [],
+        },
+        //使用的金币列表
+        _SnakeCoinUseList: {
             default: [],
         },
 
@@ -123,10 +133,18 @@ cc.Class({
     GetFreeFood() {
         return this.GetFree(this._SnakeFoodFreeList, this._SnakeFoodUseList, this.SnakeFoodPrefab)
     },
-
     //删除单个食物
     DelUseFood(delObj) {
         return this.DelUse(this._SnakeFoodFreeList, this._SnakeFoodUseList, delObj);
+    },
+    //金币
+    GetFreeCoin() {
+        return this.GetFree(this._SnakeCoinList, this._SnakeCoinUseList, this.coinPrefab)
+    },
+
+    //删除单个金币
+    DelUseCoin(delObj) {
+        return this.DelUse(this._SnakeCoinList, this._SnakeCoinUseList, delObj);
     },
 
     //保护罩

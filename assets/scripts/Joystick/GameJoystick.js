@@ -107,7 +107,6 @@ cc.Class({
     },
 
     _touchMoveEvent: function (event) {
-
         // 如果touch start位置和touch move相同，禁止移动
         if (this._touchLocation.x == event.getLocation().x && this._touchLocation.y == event.getLocation().y) {
             return false;

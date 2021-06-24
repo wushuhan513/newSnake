@@ -97,15 +97,23 @@ var UIGame = cc.Class({
             default: null,
             type: cc.Label,
         },
+        scoreLabel: {
+            default: null,
+            type: cc.Label,
+        },
 
         InfoPanel: {
             default: null,
             type: cc.Node,
         },
 
-        otherRankList:{
+        otherRankList: {
             default: null,
-            type :cc.Node,
+            type: cc.Node,
+        },
+        specialBox: {
+            default: [],
+            type: [cc.Node],
         },
 
         _SnakeList: [],
@@ -117,7 +125,7 @@ var UIGame = cc.Class({
         _IsSpeedDown: false,
         _DataMgr: null,
         _CurTime: 360,
-        _VoiceMgr:null,
+        _VoiceMgr: null,
         _RankUpdateTimer: 0,
         _RankInfoList: [],
         _NameList: [],
@@ -128,7 +136,10 @@ var UIGame = cc.Class({
         _IsFirstPause: false,
         _normalFood: [],
         _specialFood: [],
-        _mySnake:null,
+        _mySnake: null,
+        //AI数量小于10
+        _AICount:9,
+
     },
 
     onLoad() {
@@ -184,16 +195,17 @@ var UIGame = cc.Class({
 
 
         this._NameList = [];
-        GameGlobal.getRandomNameList(9, this._NameList);
-
+        GameGlobal.getRandomNameList(this._AICount, this._NameList);
         this._BodyList = [];
         this._HeadList = []; //初始化所有蛇
-        for (var i = 0; i < 10; ++i) {
+        for (var i = 0; i < (this._AICount + 1); ++i) {
             if (i == 0) {
                 var newSnake = new Snake();
                 var mySkin = GameGlobal.DataManager._CurMySKinIndex + 1;
                 newSnake.init(mySkin, [mySkin, mySkin], this.AllObjNode, cc.v2(0, 0), this.Camera, true, this._MapSizeWidth, this._MapSizeHeight, i); //newSnake.init(4, [10, 20], this.AllObjNode, cc.v2(0, 0), this.Camera, true, this._MapSizeWidth, this._MapSizeHeight);
-                newSnake.initMoveDir(cc.v2(1, 0));
+                var ranDir = cc.v2(1, 0);
+                ranDir.rotateSelf(Math.random() * 3.14);
+                newSnake.initMoveDir(ranDir);
                 var myName = this._DataMgr._MyNickName;
                 if (myName.length == 0) {
                     myName = '快乐卡比兽';
@@ -253,7 +265,7 @@ var UIGame = cc.Class({
         manager.enabled = false;
 
         //重置所有蛇
-        for (var i = 0; i < 10; ++i) {
+        for (var i = 0; i < this._SnakeList.length; ++i) {
             this._SnakeList[i].deadReset();
         }
         this._SnakeList = [];
@@ -335,12 +347,21 @@ var UIGame = cc.Class({
         var selfSnake = this._mySnake;
         if (selfSnake) {
             selfSnake.resetPos(cc.v2(0, 0));
-            selfSnake.initMoveDir(cc.v2(1, 0));
+            var ranDir = cc.v2(1, 0);
+            ranDir.rotateSelf(Math.random() * 3.14);
+            selfSnake.initMoveDir(ranDir);
             //无敌
             selfSnake.setState(1);
             selfSnake.changeSnakeSize();
+            this.initMySnakeState();
         }
         this.setGameState(GameState.GS_Game);
+    },
+
+    initMySnakeState() {
+        this.specialBox.forEach((item)=>{
+            item.active = false;
+        })
     },
 
     //获取主角的击杀，长度
@@ -360,6 +381,14 @@ var UIGame = cc.Class({
         return 0;
     },
 
+    // getMySnakeScore() {
+    //     var selfSnake = this._mySnake;
+    //     if (selfSnake) {
+    //         return selfSnake._score;
+    //     }
+    //     return 0;
+    // },
+
     //重置游戏
     resetGameEnd() {
         this._CurTime = 360;
@@ -374,7 +403,7 @@ var UIGame = cc.Class({
 
         //
         //初始化所有蛇
-        for (var i = 0; i < 10; ++i) {
+        for (var i = 0; i < this._AICount + 1; ++i) {
             if (i == 0) {
                 var newSnake = new Snake();
                 var mySkin = GameGlobal.DataManager._CurMySKinIndex + 1;
@@ -384,7 +413,9 @@ var UIGame = cc.Class({
                     myName = '快乐卡比兽';
                 }
                 // newSnake.hideManget();
-                newSnake.initMoveDir(cc.v2(1, 0));
+                var ranDir = cc.v2(1, 0);
+                ranDir.rotateSelf(Math.random() * 3.14);
+                newSnake.initMoveDir(ranDir);
                 newSnake.setName(myName, this.NameBaseNode);
                 newSnake.setMoveSpeed(300);
                 newSnake.changeSnakeSize();
@@ -451,7 +482,6 @@ var UIGame = cc.Class({
         // this._mySnake = newSnake;
         //无敌
         // newSnake.setState(1);
-        console.log(this._mySnake);
         this.setGameState(GameState.GS_Game);
     },
 
@@ -484,7 +514,7 @@ var UIGame = cc.Class({
     //主角被杀
     onSelfBeKilled(event) {
         event.stopPropagation();
-        this._VoiceMgr.playEffect("自己死亡音效",this._mySnake);
+        this._VoiceMgr.playEffect("自己死亡音效", this._mySnake);
         this.setGameState(GameState.GS_GameOver);
     },
 
@@ -523,7 +553,7 @@ var UIGame = cc.Class({
         //蛇的重生
         this.onOtherRelive(beKilledSnake._HeadType, beKilledSnake._BodyTypeList, beKilledSnake._PlayerName);
     },
-
+    
     //其它玩家重生
     onOtherRelive(headType, bodyTypeList, name) {
         var newSnake = new Snake();
@@ -548,7 +578,7 @@ var UIGame = cc.Class({
     onMeBound(event) {
 
         event.stopPropagation();
-        this._VoiceMgr.playEffect("自己死亡音效",this._mySnake);
+        this._VoiceMgr.playEffect("自己死亡音效", this._mySnake);
         this.setGameState(GameState.GS_GameOver);
     },
 
@@ -565,7 +595,7 @@ var UIGame = cc.Class({
         this._IsFirstPause = false;
     },
     //更新排行榜积分
-    updateMainRank() {
+    updateMainRank(s) {
         let rankScore = new Array();
         for (let i = 0; i < this._SnakeList.length; i++) {
             let s = this._SnakeList[i];
@@ -578,10 +608,60 @@ var UIGame = cc.Class({
             let r = rankList[i];
             if (rankScore[i]) {
                 let s = rankScore[i];
+                if(s[0] == this._mySnake._PlayerName) {
+                    r.getChildByName("playerName").color = cc.color(255,100,100,255);
+                    r.getChildByName("playerCount").color = cc.color(255,100,100,255);
+                } else {
+                    r.getChildByName("playerName").color = cc.color(255,255,255,255);
+                    r.getChildByName("playerCount").color = cc.color(255,255,255,255);
+                }
                 r.getChildByName("playerName").getComponent(cc.Label).string = (i + 1) + "、" + s[0];
                 r.getChildByName("playerCount").getComponent(cc.Label).string = s[1];
             }
         }
+        if (s == this._mySnake) {
+            this.scoreLabel.string = s._score;
+            this.addCoinToScore();
+        }
+    },
+
+    //特殊道具状态
+    showSpecialFood(type,value){
+        let box = this.specialBox[type];
+        if(value <= 0) {
+            box.active = false;
+            if(type == 2) {
+                this._mySnake.showSnakeLighting(false);
+            }
+            return
+        } else {
+            box.active = true;
+            if(type == 2) {
+                this._mySnake.showSnakeLighting(true);
+            }
+        }
+        let mask = box.getChildByName("mask");
+        mask.getComponent(cc.Sprite).fillRange = value;
+    },
+
+    //金币特效
+    addCoinToScore() {
+        let coin = this._Game.GetFreeCoin();;
+        coin.parent = this.node;
+        coin.y = 20;
+        coin.x = 0;
+        let coinPos = coin.getPosition();
+        let score = this.scoreLabel.node;
+        // var movePos = this.node.convertToNodeSpaceAR(score.getPosition());
+        var movePos = score.parent.getPosition();
+        movePos.x += score.x;
+        movePos.y += score.y;
+        cc.tween(coin)
+            .bezierTo(1, cc.v2(coinPos), cc.v2(coinPos.x - 100, 200), cc.v2(movePos))
+            .call(() => {
+                this._Game.DelUseCoin(coin)
+            })
+            .start()
     },
 
     rankType() {

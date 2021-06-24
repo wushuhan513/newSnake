@@ -45,6 +45,10 @@ cc.Class({
         this._foodLife = true;
         this.node.getComponent(cc.Sprite).spriteFrame = this.specialType[foodType];
         this._foodType = "normal";
+        if(foodType !=  4) {
+            this.node.width = 20;
+            this.node.height = 20;
+        }
         this._score = foodType;
     },
 

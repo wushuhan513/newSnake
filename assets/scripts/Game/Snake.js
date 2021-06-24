@@ -59,6 +59,8 @@ cc.Class({
         _GodSprite: null,
         _light_status: false,
         _light_time: 0,
+        _lighting_status: false,
+        _lighting_time: 0,
         _doubleSpeed: 200,
         _magnet_status: false,
         _magnet_interval: 0,
@@ -77,13 +79,16 @@ cc.Class({
         this._Camera = camera;
         this._PlayerSelf = isSelf;
         this._light_status = false;
+        this._lighting_status = false;
         this._doubleSpeed = 200;
         this._magnet_status = false;
         this._double_score_status = false;
-        this._double_score_status = false;
+        this._double_speed_status = false;
         this._MapWidth = mapWidth;
         this._MapHeight = mapHeight;
-
+        this._speed_interval = 0;
+        this._double_interval = 0;
+        this._magnet_interval = 0;
         //初始化所有头部样式
         this._HeadType = headType;
         //初始化所有身体样式
@@ -157,12 +162,13 @@ cc.Class({
         let parentNode = Game.FoodBaseNode;
         var len = this._HeadBodyList.length;
         for (var i = 0; i < len; ++i) {
-            //if(i % 2 == 0)
             {
                 var food = this._Game.GetFreeFood();
                 food.parent = parentNode;
-                food.x = this._HeadBodyList[i].position.x;
-                food.y = this._HeadBodyList[i].position.y;
+                let x = Math.random() * 14 - 7;
+                let y = Math.random() * 14 - 7;
+                food.x = this._HeadBodyList[i].position.x + x;
+                food.y = this._HeadBodyList[i].position.y + y;
                 food.getComponent("Food").setType(4, Game);
                 //food.setLocalZOrder(-500);
                 // this._Camera.addTarget(food);
@@ -172,13 +178,15 @@ cc.Class({
 
     initStatus() {
         this._light_status = false;
+        this._lighting_status = false;
         this._light_time = 0;
+        this._lighting_time = 0;
         this._doubleSpeed = 0;
         this._magnet_status = false;
         this._magnet_interval = 0;
         this._double_speed_status = false;
         this._double_score_status = false;
-        this._score = 0;
+        // this._score = 0;
         this._score_times = 1;
     },
 
@@ -286,6 +294,7 @@ cc.Class({
 
     addSpeed(type) {
         if (type == true) {
+            this._doubleSpeed = 200;
             this.setMoveSpeed(this._MoveSpeed + this._doubleSpeed);
         } else {
             this.setMoveSpeed(this._MoveSpeed - this._doubleSpeed);
@@ -294,10 +303,12 @@ cc.Class({
 
     //主角的 移动方向 angle:角度 由操作驱动
     setMoveDir(offX, offY, delta, angle) {
-        if (offX == 0 && offY == 0) {
+        if (offX === 1 && offY === 0) {
             return;
         }
-
+        if (offX === 0 && offY === 0) {
+            return;
+        }
         this._MoveVec.x = offX;
         this._MoveVec.y = offY;
 
@@ -370,7 +381,7 @@ cc.Class({
         }
         this._score += score * this._score_times;
         var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
-        uiGame.updateMainRank();
+        uiGame.updateMainRank(this);
         this._VoiceMgr.playEffect("吃中金币",this);
     },
 
@@ -471,7 +482,6 @@ cc.Class({
                 var aiType = Math.floor(Math.random() * 3);
                 this.changeAI(aiType);
             }
-
         }
         //边界
         else if (this._CurAIType == 10) {
@@ -490,7 +500,6 @@ cc.Class({
         if (this._CurAIType === aiType && (aiType == 6 || aiType == 7)) {
             return;
         }
-
 
         this._CurAIType = aiType;
 
@@ -549,6 +558,37 @@ cc.Class({
             })
         }
     },
+    showSnakeLighting(type) {
+        if(this._lighting_status == type) {
+            return
+        }
+        this._lighting_time = 0;
+        this._lighting_status = type;
+        if (type == false) {
+            this._HeadBodyList.forEach((s) => {
+                s.getChildByName("lighting").active = false;
+            })
+        }
+    },
+
+    lightingShow(dt) {
+        let body_list = this._HeadBodyList;
+        let count = Math.ceil(body_list.length / 10);
+        if (this._lighting_time < 10) {
+            this._lighting_time += dt * 20;
+        } else {
+            this._lighting_time = 0;
+        }
+        for (let i = 0; i < body_list.length; i++) {
+            body_list[i].getChildByName("lighting").active = false;
+            for (let o = 0; o < count; o++) {
+                if (body_list[o * 10 + Math.floor(this._lighting_time)]) {
+                    body_list[o * 10 + Math.floor(this._lighting_time)].getChildByName("lighting").active = true;
+                }
+            }
+        }
+    },
+
 
     lightShow(dt) {
         let body_list = this._HeadBodyList;
@@ -570,12 +610,16 @@ cc.Class({
 
     showSpecialState(delta) {
         //计算双份积分时长
+        var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
         if (this._double_score_status == true) {
             if (this._double_interval > 0) {
-                this._double_interval -= delta;
+                this._double_interval -= delta; 
             } else {
                 this._double_score_status = false;
                 this._score_times = 1;
+            }
+            if(uiGame._mySnake == this) {
+                uiGame.showSpecialFood(0,this._double_interval / 10);
             }
         }
         //计算磁铁时间时长
@@ -586,6 +630,9 @@ cc.Class({
                 this._SnakeHead.getChildByName("magnet").active = false;
                 this._magnet_status = false;
             }
+            if(uiGame._mySnake == this) {
+                uiGame.showSpecialFood(1,this._magnet_interval / 10);
+            }
         }
         if (this._double_speed_status == true) {
             //计算加速时间时长
@@ -595,9 +642,15 @@ cc.Class({
                 this.addSpeed(false);
                 this._double_speed_status = false;
             }
+            if(uiGame._mySnake == this) {
+                uiGame.showSpecialFood(2,this._speed_interval / 10);
+            }
         }
         if (this._light_status == true) {
             this.lightShow(delta);
+        }
+        if (this._lighting_status == true) {
+            this.lightingShow(delta);
         }
     },
 
@@ -639,13 +692,13 @@ cc.Class({
             //其它玩家
             if (Math.abs(this._SnakeHead.x) > this._MapWidth / 2 - 200) {
                 if (Math.abs(this._SnakeHead.y) > this._MapHeight / 2 - 200) {
-                    this.changeAI(10, cc.v2(-this._MoveVec.x, -this._MoveVec.y));
+                    this.changeAI(10, cc.v2(-this._MoveVec.x * Math.random(), -this._MoveVec.y * Math.random()));
                 } else {
-                    this.changeAI(10, cc.v2(-this._MoveVec.x, this._MoveVec.y));
+                    this.changeAI(10, cc.v2(-this._MoveVec.x * Math.random(), this._MoveVec.y * Math.random()));
                 }
 
             } else if (Math.abs(this._SnakeHead.y) > this._MapHeight / 2 - 200) {
-                this.changeAI(10, cc.v2(this._MoveVec.x, -this._MoveVec.y));
+                this.changeAI(10, cc.v2(this._MoveVec.x, -this._MoveVec.y * Math.random()));
             }
 
             this.aiUpdate(delta);
@@ -761,7 +814,7 @@ cc.Class({
                 } else if (this._SnakeHead.y < -(this._MapHeight / 2 - 200)) {
                     this._SnakeHead.y = -(this._MapHeight / 2 - 200) + 10;
                 }
-                this.changeAI(10, cc.v2(-this._MoveVec.x, -this._MoveVec.y));
+                this.changeAI(10, cc.v2(-this._MoveVec.x * Math.random(), -this._MoveVec.y * Math.random()));
             }
 
             this.aiUpdate(delta);

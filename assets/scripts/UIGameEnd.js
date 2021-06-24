@@ -41,6 +41,12 @@ cc.Class({
             default: null,
             type: cc.Label,
         },
+        // //积分label
+        // ScoreLabel:
+        // {
+        //     default: null,
+        //     type: cc.Label,
+        // },
 
         //奖励金币：
         RewardGoldLabel:
@@ -64,6 +70,7 @@ cc.Class({
         this.RewardGoldLabel.string = "";
         this.LenLabel.string = "" + uiGame.getMySnakeLen();
         this.KillLabel.string = "" + uiGame.getMySnakeKill();
+        // this.ScoreLabel.string = "" + uiGame.getMySnakeScore();
     },
 
     onDisable() {

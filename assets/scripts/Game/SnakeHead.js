@@ -111,7 +111,7 @@ cc.Class({
                 //
                 if (this._Snake._PlayerSelf == false) {
                     var hitRate = Math.random() * 100;
-                    if (hitRate > 85) {
+                    if (hitRate > 99) {
                         return;
                     }
                     this._Snake.changeAI(6);

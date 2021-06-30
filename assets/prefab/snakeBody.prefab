@@ -340,9 +340,6 @@
       "__id__": 1
     },
     "_enabled": true,
-    "Atlas": {
-      "__uuid__": "792b95a6-f3d8-4c02-a5dd-a993cab1c4d3"
-    },
     "_Snake": null,
     "_lastMoveVec": {
       "__type__": "cc.Vec2",

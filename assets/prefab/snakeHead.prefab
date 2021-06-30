@@ -231,7 +231,9 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_spriteFrame": null,
+    "_spriteFrame": {
+      "__uuid__": "63f12d2d-f398-487a-84d1-b299ef9e9fa8"
+    },
     "_type": 0,
     "_sizeMode": 0,
     "_fillType": 0,
@@ -254,9 +256,7 @@
       "__id__": 1
     },
     "_enabled": true,
-    "Atlas": {
-      "__uuid__": "49a3d1f5-6272-4b11-94c9-2004a52e4f22"
-    },
+    "Atlas": null,
     "_Snake": null,
     "_Game": null,
     "_id": ""

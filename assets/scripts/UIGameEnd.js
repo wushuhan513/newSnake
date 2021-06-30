@@ -5,30 +5,13 @@ cc.Class({
 
     properties:
     {
-        //返回按钮 
-        BackBtn:
-        {
-            default: null,
-            type: cc.Button,
-        },
         //再来一局
         AgainBtn:
         {
             default: null,
             type: cc.Button,
         },
-        //炫耀
-        ShareBtn:
-        {
-            default: null,
-            type: cc.Button,
-        },
-        //关闭按钮 
-        CloseBtn:
-        {
-            default: null,
-            type: cc.Button,
-        },
+        
         //长度Label
         LenLabel:
         {
@@ -77,10 +60,7 @@ cc.Class({
     },
 
     start() {
-        this.BackBtn.node.on(cc.Node.EventType.TOUCH_END, this.onBack, this);
         this.AgainBtn.node.on(cc.Node.EventType.TOUCH_END, this.onAgain, this);
-        // this.ShareBtn.node.on(cc.Node.EventType.TOUCH_END, this.onShareBtn, this);
-        this.CloseBtn.node.on(cc.Node.EventType.TOUCH_END, this.onBack, this);
     },
 
 

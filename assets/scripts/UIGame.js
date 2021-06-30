@@ -249,7 +249,7 @@ var UIGame = cc.Class({
         }
 
         //初始化食物
-        for (var i = 0; i < 80; ++i) {
+        for (var i = 0; i < 800; ++i) {
             this.addFood();
         }
         this.scheduleOnce(() => {
@@ -333,7 +333,7 @@ var UIGame = cc.Class({
     checkAddFood() {
         // var curFoodCount = this._normalFood.length;
         var curFoodCount = this.FoodBaseNode.childrenCount;
-        if (curFoodCount < 150) {
+        if (curFoodCount < 800) {
             this.addFood();
         }
     },
@@ -451,7 +451,7 @@ var UIGame = cc.Class({
         }
 
         //初始化食物
-        for (var i = 0; i < 80; ++i) {
+        for (var i = 0; i < 800; ++i) {
             this.addFood();
         }
         //初始化特殊道具
@@ -648,7 +648,7 @@ var UIGame = cc.Class({
     addCoinToScore() {
         let coin = this._Game.GetFreeCoin();;
         coin.parent = this.node;
-        coin.y = 20;
+        coin.y = 0;
         coin.x = 0;
         let coinPos = coin.getPosition();
         let score = this.scoreLabel.node;
@@ -770,6 +770,9 @@ var UIGame = cc.Class({
 
         //更新时间
         if (this._DataMgr._CurSelectMode == 0) {
+            //倒计时模式
+            this.TimerLabel.string = "";
+            return
             this._CurTime -= dt;
             if (this._CurTime <= 0) {
                 this._CurTime = 0;

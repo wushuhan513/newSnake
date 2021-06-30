@@ -108,15 +108,6 @@ cc.Class({
         } else {
             this.UIList[uiType].active = false;
         }
-
-        if (this.isPopUI(uiType) || uiType == UIType.UIType_Skin) {
-            //QQ广告恢复展示
-            var uihall = this.getUI(UIType.UIType_Hall);
-            if (uihall != null && uihall.node.active) {
-                uihall.resumeAdShow();
-            }
-
-        }
     },
 
     //关闭UI
@@ -130,7 +121,6 @@ cc.Class({
             cc.log("closeUI invalid uiType, please check UIList");
             return;
         }
-
         return this.UIList[uiType].getComponent(this.getUIScriptName(uiType));
     },
 

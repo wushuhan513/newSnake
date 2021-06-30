@@ -12,26 +12,8 @@ cc.Class({
             default: null,
             type: cc.Label,
         },
-        //复活按钮 
-        ReliveBtn:
-        {
-            default: null,
-            type: cc.Button,
-        },
-        //返回按钮 
-        BackBtn:
-        {
-            default: null,
-            type: cc.Button,
-        },
         //重来
         AgainBtn:
-        {
-            default: null,
-            type: cc.Button,
-        },
-        //关闭按钮 
-        CloseBtn:
         {
             default: null,
             type: cc.Button,
@@ -45,8 +27,8 @@ cc.Class({
     // onLoad () {},
 
     start() {
-        this.BackBtn.node.on(cc.Node.EventType.TOUCH_END, this.onBack, this);
-        this.CloseBtn.node.on(cc.Node.EventType.TOUCH_END, this.onBack, this);
+        // this.BackBtn.node.on(cc.Node.EventType.TOUCH_END, this.onBack, this);
+        // this.CloseBtn.node.on(cc.Node.EventType.TOUCH_END, this.onBack, this);
         this.AgainBtn.node.on(cc.Node.EventType.TOUCH_END,this.replay,this);
     },
 
@@ -68,9 +50,9 @@ cc.Class({
         //开启重来按钮 
         this.AgainBtn.node.active = true;
         //去掉返回按钮
-        this.BackBtn.node.active = false;
+        // this.BackBtn.node.active = false;
         //关闭分享按钮
-        this.ReliveBtn.node.active = false;
+        // this.ReliveBtn.node.active = false;
 
         var DataManager = GameGlobal.DataManager
 

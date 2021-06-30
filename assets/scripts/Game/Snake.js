@@ -385,6 +385,30 @@ cc.Class({
         this._VoiceMgr.playEffect("吃中金币",this);
     },
 
+    amplificationBody() {
+        var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
+        if(uiGame._mySnake == this) {
+            //身体变大动画
+            this.bigBodyAction(0);
+        }
+    },
+
+    bigBodyAction(index) {
+        let body = this._HeadBodyList[index];
+        if(body) {
+            body.stopAllActions();
+            cc.tween(body)
+            .to(0.1,{scale : 1.3})
+            .to(0.1,{scale : 1 })
+            .call(()=>{
+                if(this._HeadBodyList[index + 1]){
+                    this.bigBodyAction(index + 1)
+                }
+            })
+            .start()
+        }
+    },
+
     //更新蛇的粗细
     changeSnakeSize() {
         return;

@@ -4,8 +4,6 @@ cc.Class({
 
     properties: {
 
-        Atlas: cc.SpriteAtlas,
-
         //Use index
         _Snake: null,
         _lastMoveVec: cc.v2(1, 0),

@@ -4,10 +4,6 @@ cc.Class({
 
     properties: {
 
-        Atlas: {
-            default: null,
-            type: cc.SpriteAtlas,
-        },
 
         specialType: {
             default: [],
@@ -19,7 +15,7 @@ cc.Class({
         _foodLife: true,
         _foodStatus: false,
         _foodType: null,
-        _score:0,
+        _score: 0,
     },
 
     // onLoad () {},
@@ -31,32 +27,40 @@ cc.Class({
     //
     setType(foodType, game) {
         this._Game = game;
-        // this._Type = foodType;
-        // this._foodLife = true;
-        // var sprite = this.node.getComponent(cc.Sprite);
-        // var atlasName = 'food_' + foodType;
-        // var spriteFrame = this.Atlas.getSpriteFrame(atlasName);
-        // if (spriteFrame) {
-        //     sprite.spriteFrame = spriteFrame;
-        // }
         if (this._Game) {
             this._foodStatus = true;
         }
+        this.node.stopAllActions();
         this._foodLife = true;
         this.node.getComponent(cc.Sprite).spriteFrame = this.specialType[foodType];
         this._foodType = "normal";
-        if(foodType !=  4) {
+        let large = Math.random();
+        if (foodType != 4 && large < 0.96) {
+            //正常金币
             this.node.width = 20;
             this.node.height = 20;
+            this._score = 3;
+        } else if (foodType == 4) {
+            //死亡后的食物
+            this._score = 10;
+            this.node.width = 40;
+            this.node.height = 40;
+        } else {
+            //会移动的特殊金币
+            this.node.width = 40;
+            this.node.height = 40;
+            this._score = 8;
+            this.moveFood();
         }
-        this._score = foodType;
     },
-
+    //生成特殊食物
     setSpecialType(game) {
         this._Game = game;
         this._foodLife = true;
         let type = Math.floor(Math.random() * 3);
         type = type > 2 ? 1 : type;
+        this.node.width = 40;
+        this.node.height = 40;
         let text;
         switch (type) {
             case 0:
@@ -76,7 +80,7 @@ cc.Class({
         this.moveFood();
         this._foodStatus = true;
     },
-
+    //金币移动
     moveFood() {
         let width = this._Game.node.getChildByName("map").width - 40;
         let height = this._Game.node.getChildByName("map").height - 40;
@@ -111,7 +115,7 @@ cc.Class({
             this.absorbFood();
         }
     },
-
+    //食物吸收范围
     absorbFood() {
         var self = this;
         let snakeList = this._Game._SnakeList;
@@ -145,12 +149,16 @@ cc.Class({
             }
         })
     },
+    //回收食物
     putFood(head) {
         var isExist = GameGlobal.Game.DelUseFood(this.node);
         let snake = head.getComponent("SnakeHead")._Snake;
         if (isExist) {
             var addWeight = this.getAddWeight();
-            snake.addWeight(addWeight,this._score);
+            snake.addWeight(addWeight, this._score);
+            if (this._score == 8) {
+                snake.amplificationBody();
+            }
         }
         //生成新食物
         var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
@@ -184,11 +192,12 @@ cc.Class({
         }
         s._magnet_interval = 10;
     },
+    //回收特殊食物
     getSpecialFood(head) {
         GameGlobal.Game.DelUseFood(this.node);
         let snake = head.getComponent("SnakeHead")._Snake;
         var uiGame = GameGlobal.UIManager.getUI(UIType.UIType_Game);
-        GameGlobal.VoiceManager.playEffect("吃道具音效",snake);
+        GameGlobal.VoiceManager.playEffect("吃道具音效", snake);
         switch (this._Type) {
             case "magnet":
                 this.getmagnet(head, snake);
